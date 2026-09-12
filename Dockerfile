@@ -2,7 +2,7 @@ FROM golang:1.27-alpine AS builder
 
 WORKDIR /build
 
-COPY ./src/ /build/
+COPY go.mod main.go /build/
 RUN go build -v -o confrender .
 
 FROM scratch
