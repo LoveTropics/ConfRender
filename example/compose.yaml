@@ -1,0 +1,17 @@
+volumes:
+  - nginx-tmpl:
+
+services:
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - nginx-tmpl:/usr/share/nginx/html/
+      - ./index.html.tmpl:/index.html.tmpl
+    environment:
+      HELLO: World
+      env: PRODUCTION
+    ports:
+      - 3000:80
+    pre_start:
+      - image: ghcr.io/lovetropics/confrender
+        command: --infile /index.html.tmpl --outfile /usr/share/nginx/html/index.html
