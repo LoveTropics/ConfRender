@@ -5,13 +5,15 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 	"text/template"
 )
 
 var (
-	infile  = flag.String("infile", "", "File to render")
-	outfile = flag.String("outfile", "", "Output file")
+	infile    = flag.String("infile", "", "File to render")
+	outfile   = flag.String("outfile", "", "Output file")
+	secretDir = flag.String("secret-dir", "/run/secrets", "Where to look for secrets")
 )
 
 func main() {
@@ -48,6 +50,28 @@ func main() {
 	for _, kv := range os.Environ() {
 		k, v, _ := strings.Cut(kv, "=")
 		env[k] = v
+	}
+
+	if *secretDir != "" {
+		entries, err := os.ReadDir(*secretDir)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "failed to read secrets dir (%v): %v\n", *secretDir, err)
+			os.Exit(1)
+		}
+
+		for _, e := range entries {
+			if e.IsDir() {
+				continue
+			}
+			b, err := os.ReadFile(filepath.Join(*secretDir, e.Name()))
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "failed to read file: %v: %v\n", e.Name(), err)
+				os.Exit(1)
+			}
+
+			key := fmt.Sprintf("SECRET_%v", strings.ToUpper(filepath.Base(e.Name())))
+			env[key] = string(b)
+		}
 	}
 
 	if err := tmp.Execute(out, env); err != nil {
