@@ -70,7 +70,7 @@ func main() {
 			}
 
 			key := fmt.Sprintf("SECRET_%v", strings.ToUpper(filepath.Base(e.Name())))
-			env[key] = string(b)
+			env[key] = strings.TrimSpace(string(b))
 		}
 	}
 
