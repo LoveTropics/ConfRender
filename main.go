@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -14,6 +15,25 @@ var (
 	infile    = flag.String("infile", "", "File to render")
 	outfile   = flag.String("outfile", "", "Output file")
 	secretDir = flag.String("secret-dir", "/run/secrets", "Where to look for secrets")
+)
+
+var (
+	funcs = template.FuncMap{
+		"extend": func(kv ...any) (map[string]any, error) {
+			if len(kv)%2 != 0 {
+				return nil, errors.New("extend: odd number of args")
+			}
+			m := make(map[string]any, len(kv)/2)
+			for i := 0; i < len(kv); i += 2 {
+				k, ok := kv[i].(string)
+				if !ok {
+					return nil, errors.New("extend: keys must be strings")
+				}
+				m[k] = kv[i+1]
+			}
+			return m, nil
+		},
+	}
 )
 
 func main() {
@@ -74,7 +94,7 @@ func main() {
 		}
 	}
 
-	if err := tmp.Execute(out, env); err != nil {
+	if err := tmp.Funcs(funcs).Execute(out, env); err != nil {
 		fmt.Fprintf(os.Stderr, "failed to render outfile: %v\n", err)
 		os.Exit(1)
 	}
