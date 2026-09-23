@@ -60,7 +60,7 @@ func main() {
 		out = f
 	}
 
-	tmp, err := template.New(*infile).Funcs(funcs).ParseFiles(*infile)
+	tmp, err := template.New(filepath.Base(*infile)).Funcs(funcs).ParseFiles(*infile)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to parse file: %v\n", *infile)
 		os.Exit(1)
