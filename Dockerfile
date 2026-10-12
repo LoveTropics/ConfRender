@@ -1,9 +1,12 @@
-FROM golang:1.27-alpine AS builder
+FROM --platform=$BUILDPLATFORM golang:1.27-alpine AS builder
+
+ARG TARGETOS
+ARG TARGETARCH
 
 WORKDIR /build
 
 COPY go.mod main.go /build/
-RUN go build -v -o confrender .
+RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -v -o confrender .
 
 FROM scratch
 
@@ -12,7 +15,7 @@ FROM scratch
 # the image down, bypassing issues with inheriting pull_policy from the parent
 # service
 
-COPY --from=tianon/true /true /true
+COPY --from=tianon/true:multiarch /true /true
 
 
 LABEL org.opencontainers.image.title="ConfRender"
