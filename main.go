@@ -33,6 +33,12 @@ var (
 			}
 			return m, nil
 		},
+		"lower": func(s string) string {
+			return strings.ToLower(s)
+		},
+		"upper": func(s string) string {
+			return strings.ToUpper(s)
+		},
 	}
 )
 
